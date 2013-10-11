@@ -132,11 +132,13 @@ func (ld *DockerJsonDecoder) Decode(pack *pipeline.PipelinePack) (err error) {
 
 	captures := ld.match(unescaped)
 
-	pdh := new(pipeline.PayloadDecoderHelper)
-	pdh.Captures = captures
-	pdh.TimestampLayout = ld.TimestampLayout
-	pdh.TzLocation = ld.tzLocation
-	pdh.SeverityMap = ld.SeverityMap
+	pdh := &PayloadDecoderHelper{
+		Captures:        captures,
+		dRunner:         ld.dRunner,
+		TimestampLayout: ld.TimestampLayout,
+		TzLocation:      ld.tzLocation,
+		SeverityMap:     ld.SeverityMap,
+	}
 
 	pdh.DecodeTimestamp(pack)
 	pdh.DecodeSeverity(pack)
