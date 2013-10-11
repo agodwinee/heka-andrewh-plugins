@@ -127,7 +127,7 @@ func (ld *DockerJsonDecoder) Decode(pack *pipeline.PipelinePack) (err error) {
 	if jsonErr != nil {
 		return jsonErr
 	}
-	re := regexp.MustCompile("(\\\\)")
+	re := regexp.MustCompile("(\\\\)[^nt]")
 	unescaped := re.ReplaceAllLiteralString(dockerLog.Log, "")
 
 	captures := ld.match(unescaped)
