@@ -132,7 +132,7 @@ func (ld *DockerJsonDecoder) Decode(pack *pipeline.PipelinePack) (err error) {
 
 	captures := ld.match(unescaped)
 
-	pdh := &PayloadDecoderHelper{
+	pdh := &pipeline.PayloadDecoderHelper{
 		Captures:        captures,
 		dRunner:         ld.dRunner,
 		TimestampLayout: ld.TimestampLayout,
