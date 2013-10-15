@@ -1,15 +1,14 @@
-package heka_andrewh_plugins
+package pipeline
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mozilla-services/heka/pipeline"
 	"regexp"
 	"time"
 )
 
 func init() {
-	pipeline.RegisterPlugin("DockerJsonDecoder",
+	RegisterPlugin("DockerJsonDecoder",
 		func() interface{} {
 			return new(DockerJsonDecoder)
 		},
@@ -26,7 +25,7 @@ type DockerJsonDecoderConfig struct {
 
 	// Keyed to the message field that should be filled in, the value will be
 	// interpolated so it can use capture parts from the message match.
-	MessageFields pipeline.MessageTemplate `toml:"message_fields"`
+	MessageFields MessageTemplate `toml:"message_fields"`
 
 	// User specified timestamp layout string, used for parsing a timestamp
 	// string into an actual time object. If not specified or it fails to
@@ -46,10 +45,10 @@ type DockerJsonDecoderConfig struct {
 type DockerJsonDecoder struct {
 	JsonMap         map[string]string
 	SeverityMap     map[string]int32
-	MessageFields   pipeline.MessageTemplate
+	MessageFields   MessageTemplate
 	TimestampLayout string
 	tzLocation      *time.Location
-	dRunner         pipeline.DecoderRunner
+	dRunner         DecoderRunner
 }
 
 type DockerJsonFormat struct {
@@ -73,7 +72,7 @@ func (ld *DockerJsonDecoder) Init(config interface{}) (err error) {
 	}
 
 	ld.SeverityMap = make(map[string]int32)
-	ld.MessageFields = make(pipeline.MessageTemplate)
+	ld.MessageFields = make(MessageTemplate)
 	if conf.SeverityMap != nil {
 		for codeString, codeInt := range conf.SeverityMap {
 			ld.SeverityMap[codeString] = codeInt
@@ -93,7 +92,7 @@ func (ld *DockerJsonDecoder) Init(config interface{}) (err error) {
 }
 
 // Heka will call this to give us access to the runner.
-func (ld *DockerJsonDecoder) SetDecoderRunner(dr pipeline.DecoderRunner) {
+func (ld *DockerJsonDecoder) SetDecoderRunner(dr DecoderRunner) {
 	ld.dRunner = dr
 }
 
@@ -102,7 +101,7 @@ func (ld *DockerJsonDecoder) SetDecoderRunner(dr pipeline.DecoderRunner) {
 func (ld *DockerJsonDecoder) match(s string) (captures map[string]string) {
 	captures = make(map[string]string)
 
-	jp := new(pipeline.JsonPath)
+	jp := new(JsonPath)
 	jp.SetJsonText(s)
 
 	for capture_group, jpath := range ld.JsonMap {
@@ -119,7 +118,7 @@ func (ld *DockerJsonDecoder) match(s string) (captures map[string]string) {
 // there's a match, the message will be populated based on the
 // decoder's message template, with capture values interpolated into
 // the message template values.
-func (ld *DockerJsonDecoder) Decode(pack *pipeline.PipelinePack) (err error) {
+func (ld *DockerJsonDecoder) Decode(pack *PipelinePack) (err error) {
 
 	var dockerLog DockerJsonFormat
 
@@ -132,7 +131,7 @@ func (ld *DockerJsonDecoder) Decode(pack *pipeline.PipelinePack) (err error) {
 
 	captures := ld.match(unescaped)
 
-	pdh := &pipeline.PayloadDecoderHelper{
+	pdh := &PayloadDecoderHelper{
 		Captures:        captures,
 		dRunner:         ld.dRunner,
 		TimestampLayout: ld.TimestampLayout,
